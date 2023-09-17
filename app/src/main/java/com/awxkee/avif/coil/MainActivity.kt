@@ -7,7 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import coil.ImageLoader
 import coil.load
 import com.awxkee.avif.coil.databinding.ActivityMainBinding
-import com.github.awxkee.avifcoil.HeifDecoder
+import com.github.awxkee.avifcoil.decoder.HeifDecoder
 
 class MainActivity : AppCompatActivity() {
 

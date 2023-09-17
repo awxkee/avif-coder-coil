@@ -1,4 +1,4 @@
-package com.github.awxkee.avifcoil
+package com.github.awxkee.avifcoil.decoder
 
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
