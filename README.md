@@ -1,4 +1,4 @@
-=# AVIF/HEIF coil plugin for Android 24+
+# AVIF/HEIF coil plugin for Android 24+
 
 Library eliminates many bugs from standart AVIF decoder, supports HDR and ICC profiles.
 Correctly handles ICC, and color profiles and HDR images.
