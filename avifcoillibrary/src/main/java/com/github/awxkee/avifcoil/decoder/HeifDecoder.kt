@@ -112,7 +112,7 @@ class HeifDecoder(
     /**
      * @param context is preferred to be set when displaying an HDR content to apply Vulkan shaders
      */
-    class Factory(private val context: Context?) : Decoder.Factory {
+    class Factory(private val context: Context? = null) : Decoder.Factory {
         override fun create(
             result: SourceResult,
             options: Options,
