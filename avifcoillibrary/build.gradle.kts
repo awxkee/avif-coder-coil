@@ -64,5 +64,5 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     api("io.coil-kt:coil:2.4.0")
-    api("com.github.awxkee:avif-coder:1.4.2")
+    api("com.github.awxkee:avif-coder:1.5.0")
 }
