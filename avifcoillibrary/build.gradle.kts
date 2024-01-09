@@ -32,7 +32,7 @@ android {
     }
 
     namespace = "com.github.awxkee.avifcodercoil"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 24
