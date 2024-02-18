@@ -15,7 +15,7 @@ afterEvaluate {
             create<MavenPublication>("mavenJava") {
                 groupId = "com.github.awxkee"
                 artifactId = "avif-coder-coil"
-                version = "1.5.4"
+                version = "1.6.9"
                 from(components.findByName("release"))
 //                artifact("androidSourcesJar")
             }
@@ -64,5 +64,5 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     api("io.coil-kt:coil:2.5.0")
-    api("com.github.awxkee:avif-coder:1.5.12")
+    api("com.github.awxkee:avif-coder:1.6.0")
 }
