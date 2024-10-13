@@ -28,7 +28,6 @@
 
 package com.github.awxkee.avifcoil.decoder
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
@@ -46,14 +45,13 @@ import kotlinx.coroutines.runInterruptible
 import okio.ByteString.Companion.encodeUtf8
 
 class HeifDecoder(
-    private val context: Context?,
     private val source: SourceResult,
     private val options: Options,
     private val imageLoader: ImageLoader,
     private val exceptionLogger: ((Exception) -> Unit)? = null,
 ) : Decoder {
 
-    private val coder = HeifCoder(context)
+    private val coder = HeifCoder()
 
     override suspend fun decode(): DecodeResult? = runInterruptible {
         try {
@@ -115,10 +113,7 @@ class HeifDecoder(
         }
     }
 
-    /**
-     * @param context is preferred to be set when displaying an HDR content to apply Vulkan shaders
-     */
-    class Factory(private val context: Context? = null) : Decoder.Factory {
+    class Factory : Decoder.Factory {
         override fun create(
             result: SourceResult,
             options: Options,
@@ -126,7 +121,7 @@ class HeifDecoder(
         ): Decoder? {
             return if (AVAILABLE_BRANDS.any {
                     result.source.source().rangeEquals(4, it)
-                }) HeifDecoder(context, result, options, imageLoader) else null
+                }) HeifDecoder(result, options, imageLoader) else null
         }
 
         companion object {

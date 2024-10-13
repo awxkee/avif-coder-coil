@@ -22,9 +22,9 @@ class MainActivity : AppCompatActivity() {
             binding.imageView.load("https://wh.aimuse.online/preset/federico-beccari.avif",
                 imageLoader = ImageLoader.Builder(this)
                     .components {
-                        add(HeifDecoder.Factory(this@MainActivity))
+                        add(HeifDecoder.Factory())
                     }
-                    .bitmapConfig(Bitmap.Config.HARDWARE)
+                    .bitmapConfig(Bitmap.Config.RGBA_1010102)
                     .build())
         }
     }
