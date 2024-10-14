@@ -83,8 +83,8 @@ public class AnimatedAvifDecoder(
                 )
             }
 
-            val dstWidth = options.size.width.pxOrElse { 0 } / 2
-            val dstHeight = options.size.height.pxOrElse { 0 } / 2
+            val dstWidth = options.size.width.pxOrElse { 0 }
+            val dstHeight = options.size.height.pxOrElse { 0 }
             val scaleMode = when (options.scale) {
                 Scale.FILL -> ScaleMode.FILL
                 Scale.FIT -> ScaleMode.FIT
