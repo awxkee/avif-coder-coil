@@ -78,15 +78,19 @@ public class AnimatedDrawable(
 
     private val measuredTimesStore = mutableListOf<Int>()
 
-    private fun makeDecodingRunner(nextFrameIndex: Int): Runnable {
-        return DecodeFrameRunnable(
-            syncedFrames,
-            frameStore,
-            lock,
-            nextFrameIndex,
-            measuredTimesStore
-        )
-    }
+    private var shouldClearCache = frameStore.framesCount > preheatFrames
+
+    private fun makeDecodingRunner(
+        nextFrameIndex: Int
+    ): Runnable = DecodeFrameRunnable(
+        syncedFrames = syncedFrames,
+        frameStore = frameStore,
+        lock = lock,
+        nextFrameIndex = nextFrameIndex,
+        measuredTimesStore = measuredTimesStore,
+        preheatFrames = preheatFrames,
+        shouldClearCache = shouldClearCache
+    )
 
     private class DecodeFrameRunnable(
         private val syncedFrames: MutableList<SyncedFrame>,
@@ -94,11 +98,19 @@ public class AnimatedDrawable(
         private val lock: Any,
         private val nextFrameIndex: Int,
         private val measuredTimesStore: MutableList<Int>,
+        private val preheatFrames: Int,
+        private val shouldClearCache: Boolean
     ) : Runnable {
         override fun run() {
             val measureTime = measureTimeMillis {
                 val syncedNextFrame = syncedFrames.firstOrNull { it.frameIndex == nextFrameIndex }
                 if (syncedNextFrame == null) {
+                    if (shouldClearCache) {
+                        val firstFromNext = nextFrameIndex - preheatFrames
+                        if (syncedFrames.firstOrNull { it.frameIndex == firstFromNext } != null) {
+                            syncedFrames.removeIf { it.frameIndex == firstFromNext }
+                        }
+                    }
                     val nextFrame = frameStore.getFrame(nextFrameIndex)
                     val nextFrameDuration = frameStore.getFrameDuration(nextFrameIndex)
                     synchronized(lock) {
