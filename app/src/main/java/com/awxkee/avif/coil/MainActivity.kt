@@ -27,9 +27,9 @@ class MainActivity : AppCompatActivity() {
                     .newBuilder()
                     .logger(DebugLogger())
                     .components {
-                        add(AnimatedAvifDecoder.Factory(preheatFrames = 2))
+                        add(AnimatedAvifDecoder.Factory(preheatFrames = 5))
                     }
-                    .bitmapConfig(Bitmap.Config.RGBA_1010102)
+                    .bitmapConfig(Bitmap.Config.ARGB_8888)
                     .build()
             )
         }
