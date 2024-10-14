@@ -31,7 +31,6 @@ package com.github.awxkee.avifcoil.decoder.animation
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.ColorFilter
-import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.drawable.Animatable
@@ -78,8 +77,6 @@ public class AnimatedDrawable(
 
     private val measuredTimesStore = mutableListOf<Int>()
 
-    private var shouldClearCache = frameStore.framesCount > preheatFrames
-
     private fun makeDecodingRunner(
         nextFrameIndex: Int
     ): Runnable = DecodeFrameRunnable(
@@ -87,9 +84,7 @@ public class AnimatedDrawable(
         frameStore = frameStore,
         lock = lock,
         nextFrameIndex = nextFrameIndex,
-        measuredTimesStore = measuredTimesStore,
-        preheatFrames = preheatFrames,
-        shouldClearCache = shouldClearCache
+        measuredTimesStore = measuredTimesStore
     )
 
     private class DecodeFrameRunnable(
@@ -97,20 +92,12 @@ public class AnimatedDrawable(
         private val frameStore: AnimatedFrameStore,
         private val lock: Any,
         private val nextFrameIndex: Int,
-        private val measuredTimesStore: MutableList<Int>,
-        private val preheatFrames: Int,
-        private val shouldClearCache: Boolean
+        private val measuredTimesStore: MutableList<Int>
     ) : Runnable {
         override fun run() {
             val measureTime = measureTimeMillis {
                 val syncedNextFrame = syncedFrames.firstOrNull { it.frameIndex == nextFrameIndex }
                 if (syncedNextFrame == null) {
-                    if (shouldClearCache) {
-                        val firstFromNext = nextFrameIndex - preheatFrames
-                        if (syncedFrames.firstOrNull { it.frameIndex == firstFromNext } != null) {
-                            syncedFrames.removeIf { it.frameIndex == firstFromNext }
-                        }
-                    }
                     val nextFrame = frameStore.getFrame(nextFrameIndex)
                     val nextFrameDuration = frameStore.getFrameDuration(nextFrameIndex)
                     synchronized(lock) {
@@ -226,7 +213,6 @@ public class AnimatedDrawable(
         mHandlerThread.post(preheatRunnable)
     }
 
-    private val matrix = Matrix()
     private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     private val rect = Rect()
@@ -234,7 +220,6 @@ public class AnimatedDrawable(
     override fun draw(canvas: Canvas) {
         val bmp = currentBitmap
         if (bmp != null) {
-            matrix.reset()
             rect.set(0, 0, bmp.width, bmp.height)
             canvas.drawBitmap(bmp, rect, bounds, paint)
         }
@@ -245,11 +230,11 @@ public class AnimatedDrawable(
     }
 
     override fun getIntrinsicHeight(): Int {
-        return frameStore.height
+        return bounds.height()
     }
 
     override fun getIntrinsicWidth(): Int {
-        return frameStore.width
+        return bounds.width()
     }
 
     override fun setColorFilter(colorFilter: ColorFilter?) {
