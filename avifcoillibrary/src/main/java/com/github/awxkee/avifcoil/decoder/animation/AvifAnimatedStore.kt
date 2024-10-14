@@ -48,7 +48,7 @@ public class AvifAnimatedStore(
             frame = frame,
             scaledWidth = targetWidth,
             scaledHeight = targetHeight,
-            scaleQuality = ScalingQuality.HIGH,
+            scaleQuality = ScalingQuality.FASTEST,
             scaleMode = scaleMode,
             preferredColorConfig = preferredColorConfig
         )
