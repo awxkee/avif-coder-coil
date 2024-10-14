@@ -83,8 +83,8 @@ public class AnimatedAvifDecoder(
                 )
             }
 
-            val dstWidth = options.size.width.pxOrElse { 0 }
-            val dstHeight = options.size.height.pxOrElse { 0 }
+            val dstWidth = options.size.width.pxOrElse { 0 } / 2
+            val dstHeight = options.size.height.pxOrElse { 0 } / 2
             val scaleMode = when (options.scale) {
                 Scale.FILL -> ScaleMode.FILL
                 Scale.FIT -> ScaleMode.FIT
@@ -123,7 +123,9 @@ public class AnimatedAvifDecoder(
             ),
             preheatFrames = preheatFrames,
             firstFrameAsPlaceholder = true
-        )
+        ).apply {
+            setBounds(0, 0, dstWidth, dstHeight)
+        }
     } else {
         BitmapDrawable(
             options.context.resources,
