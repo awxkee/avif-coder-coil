@@ -63,6 +63,6 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
-    api("io.coil-kt:coil:2.7.0")
-    api("com.github.awxkee:avif-coder:2.0.6")
+    api("io.coil-kt.coil3:coil:3.0.2")
+    api("com.github.awxkee:avif-coder:2.0.7")
 }

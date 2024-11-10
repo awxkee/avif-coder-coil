@@ -5,9 +5,10 @@ import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
-import coil.imageLoader
-import coil.load
-import coil.util.DebugLogger
+import coil3.imageLoader
+import coil3.load
+import coil3.request.bitmapConfig
+import coil3.util.DebugLogger
 import com.awxkee.avif.coil.databinding.ActivityMainBinding
 import com.github.awxkee.avifcoil.decoder.animation.AnimatedAvifDecoder
 

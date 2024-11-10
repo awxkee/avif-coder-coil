@@ -31,13 +31,19 @@ package com.github.awxkee.avifcoil.decoder
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
-import coil.ImageLoader
-import coil.decode.DecodeResult
-import coil.decode.Decoder
-import coil.fetch.SourceResult
-import coil.request.Options
-import coil.size.Scale
-import coil.size.pxOrElse
+import coil3.ImageLoader
+import coil3.asImage
+import coil3.decode.DecodeResult
+import coil3.decode.Decoder
+import coil3.fetch.SourceFetchResult
+import coil3.request.Options
+import coil3.request.allowHardware
+import coil3.request.allowRgb565
+import coil3.request.bitmapConfig
+import coil3.size.Scale
+import coil3.size.ScaleDrawable
+import coil3.size.Size
+import coil3.size.pxOrElse
 import com.radzivon.bartoshyk.avif.coder.HeifCoder
 import com.radzivon.bartoshyk.avif.coder.PreferredColorConfig
 import com.radzivon.bartoshyk.avif.coder.ScaleMode
@@ -45,7 +51,7 @@ import kotlinx.coroutines.runInterruptible
 import okio.ByteString.Companion.encodeUtf8
 
 class HeifDecoder(
-    private val source: SourceResult,
+    private val source: SourceFetchResult,
     private val options: Options,
     private val imageLoader: ImageLoader,
     private val exceptionLogger: ((Exception) -> Unit)? = null,
@@ -58,31 +64,39 @@ class HeifDecoder(
             // ColorSpace is preferred to be ignored due to lib is trying to handle all color profile by itself
             val sourceData = source.source.source().readByteArray()
 
-            var mPreferredColorConfig: PreferredColorConfig = when (options.config) {
+            var mPreferredColorConfig: PreferredColorConfig = when (options.bitmapConfig) {
                 Bitmap.Config.ALPHA_8 -> PreferredColorConfig.RGBA_8888
                 Bitmap.Config.RGB_565 -> if (options.allowRgb565) PreferredColorConfig.RGB_565 else PreferredColorConfig.DEFAULT
                 Bitmap.Config.ARGB_8888 -> PreferredColorConfig.RGBA_8888
-                else -> PreferredColorConfig.DEFAULT
+                else -> {
+                    if (options.allowHardware) {
+                        PreferredColorConfig.DEFAULT
+                    } else {
+                        PreferredColorConfig.RGBA_8888
+                    }
+                }
             }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && options.config == Bitmap.Config.RGBA_F16) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && options.bitmapConfig == Bitmap.Config.RGBA_F16) {
                 mPreferredColorConfig = PreferredColorConfig.RGBA_F16
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && options.config == Bitmap.Config.HARDWARE) {
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && options.bitmapConfig == Bitmap.Config.HARDWARE) {
                 mPreferredColorConfig = PreferredColorConfig.HARDWARE
-            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && options.config == Bitmap.Config.RGBA_1010102) {
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && options.bitmapConfig == Bitmap.Config.RGBA_1010102) {
                 mPreferredColorConfig = PreferredColorConfig.RGBA_1010102
             }
 
-            if (options.size == coil.size.Size.ORIGINAL) {
+            if (options.size == Size.ORIGINAL) {
                 val originalImage =
                     coder.decode(
                         sourceData,
                         preferredColorConfig = mPreferredColorConfig
                     )
                 return@runInterruptible DecodeResult(
-                    BitmapDrawable(
-                        options.context.resources,
-                        originalImage
-                    ), false
+                    ScaleDrawable(
+                        BitmapDrawable(
+                            options.context.resources,
+                            originalImage
+                        ), options.scale
+                    ).asImage(), false
                 )
             }
 
@@ -102,10 +116,12 @@ class HeifDecoder(
                     scaleMode,
                 )
             return@runInterruptible DecodeResult(
-                BitmapDrawable(
-                    options.context.resources,
-                    originalImage
-                ), true
+                ScaleDrawable(
+                    BitmapDrawable(
+                        options.context.resources,
+                        originalImage
+                    ), options.scale
+                ).asImage(), true
             )
         } catch (e: Exception) {
             exceptionLogger?.invoke(e)
@@ -115,7 +131,7 @@ class HeifDecoder(
 
     class Factory : Decoder.Factory {
         override fun create(
-            result: SourceResult,
+            result: SourceFetchResult,
             options: Options,
             imageLoader: ImageLoader
         ): Decoder? {
