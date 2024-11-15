@@ -29,7 +29,6 @@
 package com.github.awxkee.avifcoil.decoder
 
 import android.graphics.Bitmap
-import android.graphics.drawable.BitmapDrawable
 import android.os.Build
 import coil3.ImageLoader
 import coil3.asImage
@@ -41,7 +40,6 @@ import coil3.request.allowHardware
 import coil3.request.allowRgb565
 import coil3.request.bitmapConfig
 import coil3.size.Scale
-import coil3.size.ScaleDrawable
 import coil3.size.Size
 import coil3.size.pxOrElse
 import com.radzivon.bartoshyk.avif.coder.HeifCoder
@@ -53,7 +51,6 @@ import okio.ByteString.Companion.encodeUtf8
 class HeifDecoder(
     private val source: SourceFetchResult,
     private val options: Options,
-    private val imageLoader: ImageLoader,
     private val exceptionLogger: ((Exception) -> Unit)? = null,
 ) : Decoder {
 
@@ -85,18 +82,14 @@ class HeifDecoder(
             }
 
             if (options.size == Size.ORIGINAL) {
-                val originalImage =
-                    coder.decode(
-                        sourceData,
-                        preferredColorConfig = mPreferredColorConfig
-                    )
+                val originalImage = coder.decode(
+                    byteArray = sourceData,
+                    preferredColorConfig = mPreferredColorConfig
+                )
+
                 return@runInterruptible DecodeResult(
-                    ScaleDrawable(
-                        BitmapDrawable(
-                            options.context.resources,
-                            originalImage
-                        ), options.scale
-                    ).asImage(), false
+                    image = originalImage.asImage(),
+                    isSampled = false
                 )
             }
 
@@ -107,21 +100,17 @@ class HeifDecoder(
                 Scale.FIT -> ScaleMode.FIT
             }
 
-            val originalImage =
-                coder.decodeSampled(
-                    sourceData,
-                    dstWidth,
-                    dstHeight,
-                    preferredColorConfig = mPreferredColorConfig,
-                    scaleMode,
-                )
+            val originalImage = coder.decodeSampled(
+                byteArray = sourceData,
+                scaledWidth = dstWidth,
+                scaledHeight = dstHeight,
+                preferredColorConfig = mPreferredColorConfig,
+                scaleMode = scaleMode,
+            )
+
             return@runInterruptible DecodeResult(
-                ScaleDrawable(
-                    BitmapDrawable(
-                        options.context.resources,
-                        originalImage
-                    ), options.scale
-                ).asImage(), true
+                image = originalImage.asImage(),
+                isSampled = true
             )
         } catch (e: Exception) {
             exceptionLogger?.invoke(e)
@@ -135,9 +124,16 @@ class HeifDecoder(
             options: Options,
             imageLoader: ImageLoader
         ): Decoder? {
-            return if (AVAILABLE_BRANDS.any {
+            return if (
+                AVAILABLE_BRANDS.any {
                     result.source.source().rangeEquals(4, it)
-                }) HeifDecoder(result, options, imageLoader) else null
+                }
+            ) {
+                HeifDecoder(
+                    source = result,
+                    options = options
+                )
+            } else null
         }
 
         companion object {
