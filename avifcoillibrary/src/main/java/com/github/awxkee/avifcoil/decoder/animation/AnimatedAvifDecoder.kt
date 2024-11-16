@@ -30,8 +30,8 @@ package com.github.awxkee.avifcoil.decoder.animation
 
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.os.Build
+import coil3.Image
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.decode.DecodeResult
@@ -42,7 +42,6 @@ import coil3.request.allowHardware
 import coil3.request.allowRgb565
 import coil3.request.bitmapConfig
 import coil3.size.Scale
-import coil3.size.ScaleDrawable
 import coil3.size.Size
 import coil3.size.pxOrElse
 import com.radzivon.bartoshyk.avif.coder.AvifAnimatedDecoder
@@ -85,13 +84,12 @@ public class AnimatedAvifDecoder(
 
             if (options.size == Size.ORIGINAL) {
                 val originalImage = AvifAnimatedDecoder(sourceData)
+
                 return@runInterruptible DecodeResult(
-                    ScaleDrawable(
-                        originalImage.drawable(
-                            colorConfig = mPreferredColorConfig,
-                            scaleMode = ScaleMode.FIT,
-                        ), options.scale
-                    ).asImage(),
+                    image = originalImage.toCoilImage(
+                        colorConfig = mPreferredColorConfig,
+                        scaleMode = ScaleMode.FIT,
+                    ),
                     isSampled = false
                 )
             }
@@ -106,14 +104,12 @@ public class AnimatedAvifDecoder(
             val originalImage = AvifAnimatedDecoder(sourceData)
 
             DecodeResult(
-                ScaleDrawable(
-                    originalImage.drawable(
-                        dstWidth = dstWidth,
-                        dstHeight = dstHeight,
-                        colorConfig = mPreferredColorConfig,
-                        scaleMode = scaleMode
-                    ), options.scale
-                ).asImage(),
+                image = originalImage.toCoilImage(
+                    dstWidth = dstWidth,
+                    dstHeight = dstHeight,
+                    colorConfig = mPreferredColorConfig,
+                    scaleMode = scaleMode
+                ),
                 isSampled = true
             )
         } catch (e: Exception) {
@@ -122,12 +118,12 @@ public class AnimatedAvifDecoder(
         }
     }
 
-    private fun AvifAnimatedDecoder.drawable(
+    private fun AvifAnimatedDecoder.toCoilImage(
         dstWidth: Int = 0,
         dstHeight: Int = 0,
         colorConfig: PreferredColorConfig,
         scaleMode: ScaleMode
-    ): Drawable = if (getFramesCount() > 1) {
+    ): Image = if (getFramesCount() > 1) {
         AnimatedDrawable(
             frameStore = AvifAnimatedStore(
                 avifAnimatedDecoder = this,
@@ -157,7 +153,7 @@ public class AnimatedAvifDecoder(
                 )
             }
         )
-    }
+    }.asImage()
 
     public class Factory(
         private val preheatFrames: Int = 6,
