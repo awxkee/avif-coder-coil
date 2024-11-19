@@ -31,17 +31,19 @@ package com.github.awxkee.avifcoil.decoder.animation
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Build
+import coil3.Extras
 import coil3.Image
 import coil3.ImageLoader
 import coil3.asImage
 import coil3.decode.DecodeResult
 import coil3.decode.Decoder
 import coil3.fetch.SourceFetchResult
+import coil3.getExtra
+import coil3.request.ImageRequest
 import coil3.request.Options
 import coil3.request.allowHardware
 import coil3.request.allowRgb565
 import coil3.request.bitmapConfig
-import coil3.size.Scale
 import coil3.size.Size
 import coil3.size.pxOrElse
 import com.radzivon.bartoshyk.avif.coder.AvifAnimatedDecoder
@@ -94,21 +96,23 @@ public class AnimatedAvifDecoder(
                 )
             }
 
-            val dstWidth = options.size.width.pxOrElse { 0 }
-            val dstHeight = options.size.height.pxOrElse { 0 }
-            val scaleMode = when (options.scale) {
-                Scale.FILL -> ScaleMode.FILL
-                Scale.FIT -> ScaleMode.FIT
-            }
 
             val originalImage = AvifAnimatedDecoder(sourceData)
+
+            val originalSize = originalImage.getImageSize()
+            val (dstWidth, dstHeight) = (originalSize.width to originalSize.height).flexibleResize(
+                maxOf(
+                    options.size.width.pxOrElse { 0 },
+                    options.size.height.pxOrElse { 0 }
+                )
+            )
 
             DecodeResult(
                 image = originalImage.toCoilImage(
                     dstWidth = dstWidth,
                     dstHeight = dstHeight,
                     colorConfig = mPreferredColorConfig,
-                    scaleMode = scaleMode
+                    scaleMode = ScaleMode.FIT
                 ),
                 isSampled = true
             )
@@ -123,7 +127,7 @@ public class AnimatedAvifDecoder(
         dstHeight: Int = 0,
         colorConfig: PreferredColorConfig,
         scaleMode: ScaleMode
-    ): Image = if (getFramesCount() > 1) {
+    ): Image = if (getFramesCount() > 1 && options.enableAvifAnimation) {
         AnimatedDrawable(
             frameStore = AvifAnimatedStore(
                 avifAnimatedDecoder = this,
@@ -157,6 +161,7 @@ public class AnimatedAvifDecoder(
         )
     }.asImage()
 
+    /** Note: If you want to use this decoder in order to convert image into other format, then pass [enableAvifAnimation] with false to [ImageRequest] */
     public class Factory(
         private val preheatFrames: Int = 6,
         private val exceptionLogger: ((Exception) -> Unit)? = null,
@@ -189,3 +194,40 @@ public class AnimatedAvifDecoder(
     }
 
 }
+
+private fun Pair<Int, Int>.flexibleResize(
+    max: Int
+): Pair<Int, Int> {
+    val (width, height) = this
+
+    if (max <= 0) return this
+
+    return if (height >= width) {
+        val aspectRatio = width.toDouble() / height.toDouble()
+        val targetWidth = (max * aspectRatio).toInt()
+        targetWidth to max
+    } else {
+        val aspectRatio = height.toDouble() / width.toDouble()
+        val targetHeight = (max * aspectRatio).toInt()
+        max to targetHeight
+    }
+}
+
+/** Note: Only works if you use [AnimatedAvifDecoder] */
+fun ImageRequest.Builder.enableAvifAnimation(enableAvifAnimation: Boolean) = apply {
+    extras[enableAvifAnimationKey] = enableAvifAnimation
+}
+
+/** Note: Only works if you use [AnimatedAvifDecoder] */
+val ImageRequest.enableAvifAnimation: Boolean
+    get() = getExtra(enableAvifAnimationKey)
+
+/** Note: Only works if you use [AnimatedAvifDecoder] */
+val Options.enableAvifAnimation: Boolean
+    get() = getExtra(enableAvifAnimationKey)
+
+/** Note: Only works if you use [AnimatedAvifDecoder] */
+val Extras.Key.Companion.enableAvifAnimation: Extras.Key<Boolean>
+    get() = enableAvifAnimationKey
+
+private val enableAvifAnimationKey = Extras.Key(default = true)
