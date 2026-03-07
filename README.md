@@ -19,16 +19,12 @@ val imageLoader = ImageLoader.Builder(context)
     .build()
 ```
 
-# Add Jitpack repository
+### How to add
 
-```groovy
-repositories {
-    maven { url "https://jitpack.io" }
-}
-```
+Note versions prior 2.2.0 were published to jitpack, but this way is outdated and no longer is supported.
 
-```groovy
-implementation 'com.github.awxkee:avif-coder-coil:1.7.5' // or any version above picker from release tags
+```kotlin
+implementation("io.github.awxkee:avif-coder-coil:2.2.0") // or any version above picker from release tags
 ```
 
 # Disclaimer
