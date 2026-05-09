@@ -1,4 +1,7 @@
 import com.vanniktech.maven.publish.AndroidMultiVariantLibrary
+import com.vanniktech.maven.publish.DeploymentValidation
+import com.vanniktech.maven.publish.JavadocJar
+import com.vanniktech.maven.publish.SourcesJar
 
 plugins {
     id("com.android.library")
@@ -9,7 +12,10 @@ plugins {
 
 mavenPublishing {
     if (System.getenv("PUBLISH_STATE") == "Release") {
-        publishToMavenCentral()
+        publishToMavenCentral(
+            automaticRelease = true,
+            validateDeployment = DeploymentValidation.PUBLISHED
+        )
         signAllPublications()
     }
 }
@@ -17,13 +23,17 @@ mavenPublishing {
 mavenPublishing {
     configure(
         AndroidMultiVariantLibrary(
-            sourcesJar = true,
-            publishJavadocJar = true,
+            JavadocJar.Javadoc(),
+            SourcesJar.Sources(),
         )
     )
 
     if (System.getenv("PUBLISH_STATE") == "Release") {
-        coordinates("io.github.awxkee", "avif-coder-coil", System.getenv("VERSION_NAME") ?: "0.0.10")
+        coordinates(
+            "io.github.awxkee",
+            "avif-coder-coil",
+            System.getenv("VERSION_NAME") ?: "0.0.10"
+        )
     } else {
         coordinates("io.github.awxkee", "avif-coder-coil", "0.0.10")
     }
@@ -102,5 +112,5 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
     api("io.coil-kt.coil3:coil:3.4.0")
-    api("io.github.awxkee:avif-coder:2.2.0")
+    api("io.github.awxkee:avif-coder:2.2.1")
 }
