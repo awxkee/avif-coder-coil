@@ -14,7 +14,7 @@ mavenPublishing {
     if (System.getenv("PUBLISH_STATE") == "Release") {
         publishToMavenCentral(
             automaticRelease = true,
-            validateDeployment = DeploymentValidation.PUBLISHED
+            validateDeployment = DeploymentValidation.VALIDATED
         )
         signAllPublications()
     }
@@ -111,6 +111,6 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.3.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.7.0")
-    api("io.coil-kt.coil3:coil:3.4.0")
-    api("io.github.awxkee:avif-coder:2.2.1")
+    api("io.coil-kt.coil3:coil:3.5.0")
+    api("io.github.awxkee:avif-coder:3.0.0-alpha01")
 }

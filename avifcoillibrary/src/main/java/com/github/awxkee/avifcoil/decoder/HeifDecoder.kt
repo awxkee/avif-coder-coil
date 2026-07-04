@@ -42,7 +42,7 @@ import coil3.request.bitmapConfig
 import coil3.size.Scale
 import coil3.size.Size
 import coil3.size.pxOrElse
-import com.radzivon.bartoshyk.avif.coder.HeifCoder
+import com.radzivon.bartoshyk.avif.coder.Coder
 import com.radzivon.bartoshyk.avif.coder.PreferredColorConfig
 import com.radzivon.bartoshyk.avif.coder.ScaleMode
 import kotlinx.coroutines.runInterruptible
@@ -54,7 +54,7 @@ class HeifDecoder(
     private val exceptionLogger: ((Exception) -> Unit)? = null,
 ) : Decoder {
 
-    private val coder = HeifCoder()
+    private val coder = Coder()
 
     override suspend fun decode(): DecodeResult? = runInterruptible {
         try {
